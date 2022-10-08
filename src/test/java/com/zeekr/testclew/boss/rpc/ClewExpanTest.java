@@ -1,11 +1,17 @@
 package com.zeekr.testclew.boss.rpc;
 
+
+import com.alibaba.fastjson.JSON;
+import com.zeekr.testclew.tools.YamlDataHelper;
 import groovy.util.logging.Slf4j;
 import io.restassured.http.ContentType;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 
 /**
@@ -16,7 +22,7 @@ import static io.restassured.RestAssured.given;
  * @Version 1.0
  **/
 @Slf4j
-public class ClewExpanTest {
+public class ClewExpanTest extends YamlDataHelper {
     Logger logger = LoggerFactory.getLogger(ClewExpanTest.class);
 
     @Test
@@ -61,5 +67,56 @@ public class ClewExpanTest {
                 .extract()
                 .response();
 
+    }
+
+    @Test(dataProvider = "yamlDataMethod")
+    public void testYamlData(Map<String,String> param){
+        String zeekrStroedId = param.get("zeekrStoreId");
+        String tmallStoreId =  param.get("tmallStoreId");
+        String paramList = "[{\"zeekrStoreId\":\"Z03111\",\"tmallStoreId\":\"TM103111\"},{\"zeekrStoreId\":\"Z022\"," +
+                "\"tmallStoreId\":\"TM1022\"}]";
+        String pamList = "[{}]" +
+//        System.out.println(param.get("zeekrStoreId")+"\t"+param.get("tmallStoreId"));
+        given()
+                .contentType(ContentType.JSON)
+                .header("appKey","NjAwMDAwMDc5NDc2MTg5NQ==")
+                .header("appSecret","cU5t3vNNahtbvLmnj9GhJhyFQnpumHrKuzcsiFg0/4A=")
+                .header("sign","vecKq6Ty1fCj/RKElP25Ajj0Y3JNVnJyIvKZL0tH0+pWT9EYXIbDS+/KNnHwgT7t")
+                .and()
+                .body(zeekrStroedId)
+                .when()
+                .post("http://openapi-test.lkhaowu.com/zeekrlife-rpc-order/v1/tmall/store/batchSave")
+                .then()
+                .statusCode(200)
+//                .body("value.state", Matchers.is(0))
+                .and()
+                .log()
+                .all()
+                .extract()
+                .response();
+    }
+
+
+    @Test
+    public void testBatchSave(){
+        String paramList = "[{\"zeekrStoreId\":\"Z03111\",\"tmallStoreId\":\"TM103111\"},{\"zeekrStoreId\":\"Z022\"," +
+                "\"tmallStoreId\":\"TM1022\"}]";
+        given()
+                .contentType(ContentType.JSON)
+                .header("appKey","NjAwMDAwMDc5NDc2MTg5NQ==")
+                .header("appSecret","cU5t3vNNahtbvLmnj9GhJhyFQnpumHrKuzcsiFg0/4A=")
+                .header("sign","vecKq6Ty1fCj/RKElP25Ajj0Y3JNVnJyIvKZL0tH0+pWT9EYXIbDS+/KNnHwgT7t")
+                .and()
+                .body(JSON.toJSON(paramList).toString())
+                .when()
+                .post("http://openapi-test.lkhaowu.com/zeekrlife-rpc-order/v1/tmall/store/batchSave")
+                .then()
+                .statusCode(200)
+//                .body("value.state", Matchers.is(0))
+                .and()
+                .log()
+                .all()
+                .extract()
+                .response();
     }
 }
